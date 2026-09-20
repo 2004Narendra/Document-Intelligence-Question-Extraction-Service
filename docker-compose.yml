@@ -1,0 +1,33 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      - db
+      - redis
+  worker:
+    build: .
+    command: celery -A app.workers.celery_app.celery worker --loglevel=info
+    env_file: .env
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      - db
+      - redis
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: document
+      POSTGRES_PASSWORD: document
+      POSTGRES_DB: documents
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  redis:
+    image: redis:7-alpine
+volumes:
+  postgres_data:
+  uploads:
